@@ -6,8 +6,11 @@ you have to install npm or yarn in your system.
 
 
 yarn install (npm install --global yarn)
+
 install nodemon (npm install nodemon -g) - globally or/ (nodemon i install) - single project
+
 install express (npm install express/ yarn add express)
+
 install bcrypt (yarn add bcrypt)
 
 
