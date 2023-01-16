@@ -4,6 +4,7 @@ const router = express.Router();
 const todoSchema = require("../schemas/todoSchema");
 //model for using object mapping. object data model (ODM)
 const Todo = new mongoose.model("Todo", todoSchema);
+const checkLogin = require("../middlewares/checkLogin")
 
 //get active todos using async-await (SAME THING 2 WAYS - ASYNC-AWAIT)
 router.get("/active", async (req, res) => {
@@ -40,20 +41,12 @@ router.get("/language", async (req, res) => {
   });
 });
 
-//get all the todos
-router.get("/", (req, res) => {
-  //   await Todo.find({ status: "active" }, (err, data) => {
-  //     if (err) {
-  //       res.status(500).json({
-  //         error: "therea a server error bro!",
-  //       });
-  //     } else {
-  //       res.status(200).json({
-  //         result: data,
-  //         message: "todo Inserted wonderfully",
-  //       });
-  //     }
-  //   }).clone();
+//get all the todos with [token checklogin method]
+router.get("/", checkLogin, (req, res) => {
+  
+  console.log(req.username);
+  console.log(req.userId);
+
   Todo.find({ status: "active" })
     .select({
       _id: 0,
