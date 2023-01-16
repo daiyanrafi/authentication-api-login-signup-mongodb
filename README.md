@@ -13,6 +13,10 @@ install express (npm install express/ yarn add express)
 
 install bcrypt (yarn add bcrypt)
 
+install jsonwebtoken (yarn add jesonwebsotoken) for token generating
+
+install dotevn (yarn add dotenv) for use a middleware processevn
+
 
 run: yarn start
 
