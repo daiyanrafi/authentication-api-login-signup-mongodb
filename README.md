@@ -15,7 +15,7 @@ install bcrypt (yarn add bcrypt)
 
 install jsonwebtoken (yarn add jesonwebsotoken) for token generating
 
-install dotevn (yarn add dotenv) for use a middleware processevn
+install dotevn (yarn add dotenv) for use a middleware processevn. its a lib.
 
 
 run: yarn start
