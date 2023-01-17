@@ -57,7 +57,7 @@ router.post("/login", async (req, res) => {
         });
       } else {
         res.status(401).json({
-          error: "authentication failed baiby!",
+          error: "authentication failed bro!",
         });
       }
     } else {
@@ -68,6 +68,25 @@ router.post("/login", async (req, res) => {
   } catch {
     res.status(401).json({
       error: "authentication failed baiby!",
+    });
+  }
+});
+
+//get all users
+router.get('/all', async (req, res) => {
+  try{
+    const users = await User.find({
+      status: 'active'
+    }).populate("todos");
+
+    res.status(200).json({
+      data: users,
+      message: "Success"
+    });
+  }catch (err) {
+    console.log(err);
+    res.status(500).json({
+      message: "server side error"
     });
   }
 });

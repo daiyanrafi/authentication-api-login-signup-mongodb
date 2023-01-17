@@ -2,30 +2,55 @@ const express = require("express");
 const mongoose = require("mongoose");
 const router = express.Router();
 const todoSchema = require("../schemas/todoSchema");
-//model for using object mapping. object data model (ODM)
+const userSchema = require("../schemas/userSchema");
 const Todo = new mongoose.model("Todo", todoSchema);
-const checkLogin = require("../middlewares/checkLogin")
+const User = new mongoose.model("User", userSchema);
+const checkLogin = require("../middlewares/checkLogin");
 
-//get active todos using async-await (SAME THING 2 WAYS - ASYNC-AWAIT)
+// GET ALL THE TODOS
+router.get("/", checkLogin, (req, res) => {
+  Todo.find({})
+    .populate("user", "name username -_id")
+    .select({
+      _id: 0,
+      __v: 0,
+      date: 0,
+    })
+    .limit(2)
+    .exec((err, data) => {
+      if (err) {
+        res.status(500).json({
+          error: "There was a server side error!",
+        });
+      } else {
+        res.status(200).json({
+          result: data,
+          message: "Success",
+        });
+      }
+    });
+});
+
+// GET ACTIVE TODOS
 router.get("/active", async (req, res) => {
   const todo = new Todo();
   const data = await todo.findActive();
   res.status(200).json({
-    data: data,
+    data,
   });
 });
 
-//get active todos using callback (SAME THING 2 WAYS - CALLBACK)
+// GET ACTIVE TODOS with callback
 router.get("/active-callback", (req, res) => {
   const todo = new Todo();
   todo.findActiveCallback((err, data) => {
     res.status(200).json({
-      data: data,
+      data,
     });
   });
 });
 
-//get js object [static - method]
+// GET ACTIVE TODOS
 router.get("/js", async (req, res) => {
   const data = await Todo.findByJS();
   res.status(200).json({
@@ -33,146 +58,113 @@ router.get("/js", async (req, res) => {
   });
 });
 
-//get todo language query helpers
+// GET TODOS BY LANGUAGE
 router.get("/language", async (req, res) => {
-  const data = await Todo.find().byLanguage("india");
+  const data = await Todo.find().byLanguage("react");
   res.status(200).json({
     data,
   });
 });
 
-//get all the todos with [token checklogin method]
-router.get("/", checkLogin, (req, res) => {
-  
-  console.log(req.username);
-  console.log(req.userId);
-
-  Todo.find({ status: "active" })
-    .select({
-      _id: 0,
-      _v: 0,
-      date: 0,
-    })
-    //limit means 2 list will show
-    .limit(2)
-    .exec((err, data) => {
-      if (err) {
-        res.status(500).json({
-          error: "therea a server error bro!",
-        });
-      } else {
-        res.status(200).json({
-          result: data,
-          message: "todo Inserted wonderfully",
-        });
-      }
-    });
-});
-
-//get a todo by id
+// GET A TODO by ID
 router.get("/:id", async (req, res) => {
   try {
     const data = await Todo.find({ _id: req.params.id });
     res.status(200).json({
       result: data,
-      message: "todo Inserted wonderfully",
+      message: "Success",
     });
-  } catch {
+  } catch (err) {
     res.status(500).json({
-      error: "therea a server error bro!",
+      error: "There was a server side error!",
     });
   }
-  // await Todo.find({ _id: req.params.id }, (err, data) => {
-  //   if (err) {
-  //     res.status(500).json({
-  //       error: "therea a server error bro!",
-  //     });
-  //   } else {
-  //     res.status(200).json({
-  //       result: data,
-  //       message: "todo Inserted wonderfully",
-  //     });
-  //   }
-  // }).clone();
 });
 
-//post todo
-router.post("/", async (req, res) => {
-  //did this to get the result for feed back.. api hit kotle terminal eh show kore
-  const newTodo = new Todo(req.body);
-  await newTodo.save((err) => {
+// POST A TODO
+router.post("/", checkLogin, async (req, res) => {
+  const newTodo = new Todo({
+    ...req.body,
+    user: req.userId
+  });
+
+  try {
+    const todo = await newTodo.save();
+    await User.updateOne({
+      _id: req.userId
+    }, {
+      $push: {
+        todos: todo._id
+      }
+    });
+
+    res.status(200).json({
+      message: "Todo successfully!",
+    });
+  } catch(err) {
+    console.log(err);
+    res.status(500).json({
+      error: "server side error!",
+    });
+  }
+});
+
+// POST MULTIPLE TODO
+router.post("/all", (req, res) => {
+  Todo.insertMany(req.body, (err) => {
     if (err) {
       res.status(500).json({
-        Error: "there was a server problm",
+        error: "There was a server side error!",
       });
     } else {
       res.status(200).json({
-        message: "insert done",
+        message: "Todos were inserted successfully!",
       });
     }
   });
 });
 
-//post multiple todo
-router.post("/all", async (req, res) => {
-  await Todo.insertMany(req.body, (err) => {
-    if (err) {
-      res.status(500).json({
-        Error: "there was a server problm",
-      });
-    } else {
-      res.status(200).json({
-        message: "List are inserted successfully",
-      });
-    }
-  });
-});
-
-//put todo
-router.put("/:id", async (req, res) => {
-  //updateMany
-  //findByIdAndMany
-  //updateOne
-  const result = await Todo.findByIdAndUpdate(
+// PUT TODO
+router.put("/:id", (req, res) => {
+  const result = Todo.findByIdAndUpdate(
     { _id: req.params.id },
     {
-      //for update $set property and its an object
       $set: {
         status: "active",
       },
     },
     {
-      //mongoose objects dite hoyy for findByIdAndUpdate given in document
       new: true,
+      useFindAndModify: false,
     },
     (err) => {
       if (err) {
         res.status(500).json({
-          Error: "theres a sever side error",
+          error: "There was a server side error!",
         });
       } else {
         res.status(200).json({
-          message: "todo updated successfully",
+          message: "Todo was updated successfully!",
         });
       }
     }
-  ).clone();
+  );
   console.log(result);
 });
 
-//delte todo
-router.delete("/:id", async (req, res) => {
-  await Todo.deleteOne({ _id: req.params.id }, (err) => {
+// DELETE TODO
+router.delete("/:id", (req, res) => {
+  Todo.deleteOne({ _id: req.params.id }, (err) => {
     if (err) {
       res.status(500).json({
-        error: "therea a server error bro!",
+        error: "There was a server side error!",
       });
     } else {
       res.status(200).json({
-        message: "Bro its deleted! yo yo!",
+        message: "Todo was deleted successfully!",
       });
     }
-  }).clone();
+  });
 });
 
 module.exports = router;

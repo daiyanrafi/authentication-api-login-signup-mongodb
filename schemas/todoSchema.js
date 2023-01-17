@@ -14,6 +14,10 @@ const todoSchema = mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+  user: {
+    type: mongoose.Types.ObjectId,
+    ref: "User",
+  }
 });
 
 //instance methods
@@ -29,7 +33,7 @@ todoSchema.methods = {
 //static methods
 todoSchema.statics = {
   findByJS: function () {
-    //this will give all tittels as output if a incluides in tittle
+    //this will give all tittels as output if a incluides in tittle (regular expression)
     return this.find({ tittle: /a/i });
   },
 };
