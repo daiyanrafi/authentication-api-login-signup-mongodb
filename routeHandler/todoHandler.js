@@ -16,7 +16,8 @@ router.get("/", checkLogin, (req, res) => {
       __v: 0,
       date: 0,
     })
-    .limit(2)
+    //to .limit(5) the database list..top 5 data will show
+    .limit(9)
     .exec((err, data) => {
       if (err) {
         res.status(500).json({
@@ -39,6 +40,39 @@ router.get("/active", async (req, res) => {
     data,
   });
 });
+
+// POST A TODO
+router.post("/", checkLogin, async (req, res) => {
+  const newTodo = new Todo({
+    ...req.body,
+    user: req.userId,
+  });
+
+  try {
+    const todo = await newTodo.save();
+    await User.updateOne(
+      {
+        _id: req.userId,
+      },
+      {
+        //$push modifier monsoose way if its an array
+        $push: {
+          todos: todo._id,
+        },
+      }
+    );
+
+    res.status(200).json({
+      message: "Todo successfully!",
+    });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({
+      error: "server side error!",
+    });
+  }
+});
+
 
 // GET ACTIVE TODOS with callback
 router.get("/active-callback", (req, res) => {
@@ -81,33 +115,6 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-// POST A TODO
-router.post("/", checkLogin, async (req, res) => {
-  const newTodo = new Todo({
-    ...req.body,
-    user: req.userId
-  });
-
-  try {
-    const todo = await newTodo.save();
-    await User.updateOne({
-      _id: req.userId
-    }, {
-      $push: {
-        todos: todo._id
-      }
-    });
-
-    res.status(200).json({
-      message: "Todo successfully!",
-    });
-  } catch(err) {
-    console.log(err);
-    res.status(500).json({
-      error: "server side error!",
-    });
-  }
-});
 
 // POST MULTIPLE TODO
 router.post("/all", (req, res) => {
