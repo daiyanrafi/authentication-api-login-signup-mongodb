@@ -76,7 +76,7 @@ router.get("/:id", async (req, res) => {
     });
   } catch (err) {
     res.status(500).json({
-      error: "There was a server side error!",
+      error: "Server side error dude!",
     });
   }
 });
@@ -114,11 +114,11 @@ router.post("/all", (req, res) => {
   Todo.insertMany(req.body, (err) => {
     if (err) {
       res.status(500).json({
-        error: "There was a server side error!",
+        error: "Its a server side error!",
       });
     } else {
       res.status(200).json({
-        message: "Todos were inserted successfully!",
+        message: "Inserted successfully!",
       });
     }
   });

@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 
 const todoSchema = mongoose.Schema({
-  tittle: {
+  title: {
     type: String,
     required: true,
   },
@@ -16,33 +16,31 @@ const todoSchema = mongoose.Schema({
   },
   user: {
     type: mongoose.Types.ObjectId,
-    ref: "User",
+    ref: "User"
   }
 });
 
-//instance methods
+// instance methods
 todoSchema.methods = {
   findActive: function () {
     return mongoose.model("Todo").find({ status: "active" });
   },
-  findActiveCallback: function (callback) {
-    return mongoose.model("Todo").find({ status: "active" }, callback);
+  findActiveCallback: function (cb) {
+    return mongoose.model("Todo").find({ status: "active" }, cb);
   },
 };
 
-//static methods
+// static methods
 todoSchema.statics = {
   findByJS: function () {
-    //this will give all tittels as output if a incluides in tittle (regular expression)
-    return this.find({ tittle: /a/i });
+    return this.find({ title: /js/i });
   },
 };
 
-//query helpers
+// query helpers
 todoSchema.query = {
   byLanguage: function (language) {
-    //this will give all tittels as output if a incluides in tittle
-    return this.find({ tittle: new RegExp(language, "i") });
+    return this.find({ title: new RegExp(language, "i") }); // new RegExp()
   },
 };
 

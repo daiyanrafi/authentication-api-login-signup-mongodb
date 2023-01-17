@@ -6,12 +6,12 @@ const userSchema = mongoose.Schema({
     required: true,
   },
   username: {
-    type: String,
-    required: true,
+      type: String,
+      required: true,
   },
   password: {
-    type: String,
-    required: true,
+      type: String,
+      required: true,
   },
   status: {
     type: String,
